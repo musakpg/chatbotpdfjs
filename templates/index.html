@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Chatbot</title>
+</head>
+<body>
+    <h1>Upload PDF and Ask Questions</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" id="file" name="file">
+        <button type="button" onclick="uploadFile()">Upload</button>
+    </form>
+    <div id="context"></div>
+    <input type="text" id="question" placeholder="Ask a question...">
+    <button type="button" onclick="askQuestion()">Ask</button>
+    <div id="answer"></div>
+
+    <script>
+        function uploadFile() {
+            const formData = new FormData();
+            const fileField = document.querySelector('input[type="file"]');
+
+            formData.append('file', fileField.files[0]);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.text) {
+                    document.getElementById('context').innerText = data.text;
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function askQuestion() {
+            const question = document.getElementById('question').value;
+            const context = document.getElementById('context').innerText;
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: question, context: context })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('answer').innerText = data.answer;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
